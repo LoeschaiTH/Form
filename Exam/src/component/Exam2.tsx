@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Button,
   DatePicker,
@@ -47,6 +48,11 @@ const Page2: React.FC = () => {
     sex: string;
     phoneNumber: string;
     nationality: string;
+    children?: DataType[];
+    description?: string; // เพิ่ม description เข้าไป
+    prefix?: string; // เพิ่ม prefix เข้าไป
+    showChildren?: boolean;
+    idCard : string;
   }
 
   const columns: TableColumnsType<DataType> = [
@@ -75,25 +81,58 @@ const Page2: React.FC = () => {
       key: "nationality",
     },
     {
-      title: "จัดการ",
-      dataIndex: "address",
+      title: "รายละเอียด",
+      dataIndex: "description",
       width: "30%",
-      key: "address",
+      key: "description",
+      render: (_, record) => (
+        <div>
+          {record.description || (
+            <div>
+              <div>{`(${record.prefix})`}  {record.phoneNumber}</div>
+              <div>เพศ {record.sex}</div>
+              <div>รหัสบัตรประชาชน {record.idCard}</div>
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "จัดการ",
+      dataIndex:"manage",
+      width: "10%",
+      key: "manage",
     },
   ];
 
 
   const handleSubmit = async () => {
     const formDataValues = await form.getFieldsValue();
-  
+    console.log("data",formDataValues)
+    
+    const idNumber = `${formDataValues.idNumberPart1}-${formDataValues.idNumberPart2}-${formDataValues.idNumberPart3}-${formDataValues.idNumberPart4}-${formDataValues.idNumberPart5}`;
     const newData: DataType = {
       key: tableData.length + 1,
       name: `${formDataValues.nameTitles} ${formDataValues.name} ${formDataValues.surname}`,
       sex: formDataValues.sex,
       phoneNumber: formDataValues.phoneNumber,
       nationality: formDataValues.nationality,
+      description: formDataValues.description,
+      prefix: formDataValues.prefix,
+      idCard : idNumber
     };
     setTableData([...tableData, newData]);
+  };
+  const rowSelection: TableRowSelection<DataType> = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+    },
+    onSelect: (record, selected, selectedRows) => {
+      console.log(record, selected, selectedRows);
+    },
+    onSelectAll: (selected, selectedRows, changeRows) => {
+      console.log(selected, selectedRows, changeRows);
+    },
   };
   
 
@@ -259,8 +298,8 @@ const Page2: React.FC = () => {
             rules={[{ required: true, message: "Please input!" }]}
           >
             <Radio.Group value={value} style={{ width: "500px" }}>
-              <Radio value={"ผู้ชาย"}>ผู้ชาย</Radio>
-              <Radio value={"ผู้หญิง"}>ผู้หญิง</Radio>
+              <Radio value={"ชาย"}>ผู้ชาย</Radio>
+              <Radio value={"หญิง"}>ผู้หญิง</Radio>
               <Radio value={"ไม่ระบุ"}>ไม่ระบุ</Radio>
             </Radio.Group>
           </Form.Item>
@@ -357,12 +396,9 @@ const Page2: React.FC = () => {
             height: "800px",
           }}
         >
-          <Space align="center" style={{ marginBottom: 16 }}>
-            CheckStrictly:{" "}
-            <Switch checked={checkStrictly} onChange={setCheckStrictly} />
-          </Space>
           <Table
             columns={columns}
+            rowSelection={{ ...rowSelection, checkStrictly }}
             dataSource={tableData}
             style={{
               maxWidth: "1800px",
