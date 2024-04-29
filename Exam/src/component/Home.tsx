@@ -14,7 +14,7 @@ const Home: React.FC = () => {
   
     return (
 
-      <div style={{height:'100vh'}}>
+      <div style={{height: '100vh', width: '100vw'}}>
         <Select
           defaultValue="en"
           style={{ width: 80 ,marginLeft: "1900px",marginTop:'20px'}}
